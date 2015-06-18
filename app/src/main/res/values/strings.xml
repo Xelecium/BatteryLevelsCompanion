@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">PebbleBattCompanionApp</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="pebble_battery_label">Pebble Battery</string>
+    <string name="phone_battery_label">Phone Battery</string>
+    <string name="action_settings">Settings</string>
+</resources>
