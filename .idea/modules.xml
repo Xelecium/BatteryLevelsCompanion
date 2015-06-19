@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/PebbleBattCompanionApp.iml" filepath="$PROJECT_DIR$/PebbleBattCompanionApp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BatteryLevelsCompanion.iml" filepath="$PROJECT_DIR$/BatteryLevelsCompanion.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

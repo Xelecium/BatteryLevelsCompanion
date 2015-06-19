@@ -1,4 +1,4 @@
-package xeleciumlabs.pebblebattcompanionapp;
+package xeleciumlabs.batterylevelscompanion;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

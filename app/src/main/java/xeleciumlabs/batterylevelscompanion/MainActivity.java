@@ -1,13 +1,15 @@
-package xeleciumlabs.pebblebattcompanionapp;
+package xeleciumlabs.batterylevelscompanion;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.getpebble.android.kit.PebbleKit;
@@ -33,25 +35,48 @@ public class MainActivity extends Activity {
     // manufacturer and cannot be changed
     private IntentFilter mBatteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
 
-    private BroadcastReceiver mReceiver;
+    private PebbleKit.PebbleDataReceiver mDataReceiver;
+    private BroadcastReceiver mBatteryReceiver;
+    private BroadcastReceiver mPebbleConnect;
+    private BroadcastReceiver mPebbleDisconnect;
 
-    private TextView mPebbleBatteryTextView;
-    private TextView mPhoneBatteryTextView;
+    private RelativeLayout mLayout;
+    private TextView mStatusMessageTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mPebbleBatteryTextView = (TextView) findViewById(R.id.pebbleBatteryTextView);
-        mPhoneBatteryTextView = (TextView) findViewById(R.id.phoneBatteryTextView);
+
+        mLayout = (RelativeLayout)findViewById(R.id.mainLayout);
+        mStatusMessageTextView = (TextView) findViewById(R.id.statusMessage);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        final IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
 
-        mReceiver = new BroadcastReceiver() {
+        setupReceivers();
+        registerReceivers();
+
+        updatePebbleConnection();
+    }
+
+    private void registerReceivers() {
+        final IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        mBatteryIntent = registerReceiver(null, mBatteryFilter);
+        registerReceiver(mBatteryReceiver, filter);
+
+        //Receiver for data from the Pebble
+        PebbleKit.registerReceivedDataHandler(this, mDataReceiver);
+
+        PebbleKit.registerPebbleConnectedReceiver(this, mPebbleConnect);
+
+        PebbleKit.registerPebbleDisconnectedReceiver(this, mPebbleDisconnect);
+    }
+
+    private void setupReceivers() {
+        mBatteryReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 //Update BatteryIntent with battery info
@@ -60,20 +85,46 @@ public class MainActivity extends Activity {
             }
         };
 
-        mBatteryIntent = registerReceiver(null, mBatteryFilter);
-        registerReceiver(mReceiver, filter);
-        sendBatteryToPebble();
+        mPebbleConnect = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i(TAG, "Pebble connected!");
+                updatePebbleConnection();
+            }
+        };
 
-        //Receiver for data from the Pebble
-        PebbleKit.registerReceivedDataHandler(this, new PebbleKit.PebbleDataReceiver(PebbleBattUUID) {
+        mPebbleDisconnect = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i(TAG, "Pebble disconnected!");
+                updatePebbleConnection();
+            }
+        };
+
+        mDataReceiver = new PebbleKit.PebbleDataReceiver(PebbleBattUUID) {
             @Override
             public void receiveData(Context context, int transactionId, PebbleDictionary data) {
                 Log.i(TAG, "Received data from Pebble: " + data.getInteger(SIGNAL_TO_PHONE_KEY));
-                PebbleKit.sendAckToPebble(getApplicationContext(), transactionId);
+                PebbleKit.sendAckToPebble(MainActivity.this, transactionId);
                 Log.i(TAG, "Sending Ack to Pebble");
                 sendBatteryToPebble();
             }
-        });
+        };
+    }
+
+    private void updatePebbleConnection() {
+        boolean connected = PebbleKit.isWatchConnected(this);
+        if (connected) {
+            //update layout with message
+            mLayout.setBackgroundColor(Color.parseColor("#BBFFBB"));
+            mStatusMessageTextView.setText("Connected to Pebble, sending battery info!");
+            sendBatteryToPebble();
+        }
+        else {
+            //update layout with message
+            mLayout.setBackgroundColor(Color.parseColor("#FFBBBB"));
+            mStatusMessageTextView.setText("Not connected to Pebble, can't send battery info!");
+        }
     }
 
     private void sendBatteryToPebble() {
@@ -94,16 +145,14 @@ public class MainActivity extends Activity {
         Log.d(TAG, "BatteryManager SCALE value: " + batteryScale);
 
         float batteryPercent = batteryLevel / (float)batteryScale;
-        int batteryValue = (int)(batteryPercent * 100);
 
-        mPhoneBatteryTextView.setText(batteryValue + "%");
-        return batteryValue;
+        return (int)(batteryPercent * 100);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mReceiver);
+        unregisterReceiver(mBatteryReceiver);
         Log.i(TAG, "Unregistered BroadcastReceiver");
     }
 }

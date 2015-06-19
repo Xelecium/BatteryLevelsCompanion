@@ -5,7 +5,7 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        applicationId "xeleciumlabs.pebblebattcompanionapp"
+        applicationId "xeleciumlabs.batterylevelscompanion"
         minSdkVersion 17
         targetSdkVersion 22
         versionCode 1
