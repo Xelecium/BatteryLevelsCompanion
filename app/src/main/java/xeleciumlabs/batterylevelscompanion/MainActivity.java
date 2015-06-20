@@ -17,6 +17,9 @@ import com.getpebble.android.kit.util.PebbleDictionary;
 
 import java.util.UUID;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 public class MainActivity extends Activity {
 
     //key for pushing battery info to the Pebble
@@ -24,16 +27,15 @@ public class MainActivity extends Activity {
     private static final int PHONE_CHARGE_STATE_KEY = 7;
     //key for signalling the phone to send back information
     private static final int SIGNAL_TO_PHONE_KEY = 11;
-    private static final UUID PebbleBattUUID = UUID.fromString("1e4990c7-8abe-4643-a0fd-1d86e26503b4");
+    private static final UUID BatteryLevelsUUID = UUID.fromString("1e4990c7-8abe-4643-a0fd-1d86e26503b4");
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private RelativeLayout mLayout;
-    private TextView mStatusMessageTextView;
+    @InjectView(R.id.mainLayout) RelativeLayout mLayout;
+    @InjectView(R.id.statusMessage) TextView mStatusMessageTextView;
 
     //Note: the frequency of when ACTION_BATTERY_CHANGED is determined by the
     // manufacturer and cannot be changed
-
     private final IntentFilter timeFilter = new IntentFilter(Intent.ACTION_TIME_TICK);
     private IntentFilter mBatteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private Intent mBatteryIntent;
@@ -48,8 +50,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mLayout = (RelativeLayout)findViewById(R.id.mainLayout);
-        mStatusMessageTextView = (TextView) findViewById(R.id.statusMessage);
+        ButterKnife.inject(this);
     }
 
     @Override
@@ -85,7 +86,7 @@ public class MainActivity extends Activity {
             }
         };
 
-        mDataReceiver = new PebbleKit.PebbleDataReceiver(PebbleBattUUID) {
+        mDataReceiver = new PebbleKit.PebbleDataReceiver(BatteryLevelsUUID) {
             @Override
             public void receiveData(Context context, int transactionId, PebbleDictionary data) {
                 Log.i(TAG, "Received data from Pebble: " + data.getInteger(SIGNAL_TO_PHONE_KEY));
@@ -134,7 +135,7 @@ public class MainActivity extends Activity {
         int chargeState = mBatteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
         dict.addInt32(PHONE_CHARGE_STATE_KEY, chargeState);
         Log.d(TAG, "BatteryManager PLUGGED value: " + chargeState);
-        PebbleKit.sendDataToPebble(MainActivity.this, PebbleBattUUID, dict);
+        PebbleKit.sendDataToPebble(MainActivity.this, BatteryLevelsUUID, dict);
         Log.i(TAG, "Sending battery and charge data to Pebble");
     }
 
