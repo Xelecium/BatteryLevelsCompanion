@@ -17,6 +17,8 @@ import com.getpebble.android.kit.util.PebbleDictionary;
 
 import java.util.UUID;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 
 public class MainActivity extends Activity {
 
@@ -25,21 +27,23 @@ public class MainActivity extends Activity {
     private static final int PHONE_CHARGE_STATE_KEY = 7;
     //key for signalling the phone to send back information
     private static final int SIGNAL_TO_PHONE_KEY = 11;
-    private static final UUID PebbleBattUUID = UUID.fromString("1e4990c7-8abe-4643-a0fd-1d86e26503b4");
-
+    //UUID to connect to corresponding Pebble watchface
+    private static final UUID BatteryLevelsUUID = UUID.fromString("1e4990c7-8abe-4643-a0fd-1bd86e26503b4");
+    //Tag for log events
     private static final String TAG = MainActivity.class.getSimpleName();
-
-    private Intent mBatteryIntent;
 
     //Note: the frequency of when ACTION_BATTERY_CHANGED is determined by the
     // manufacturer and cannot be changed
     private IntentFilter mBatteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+    private Intent mBatteryIntent;
 
+    //Event Handlers
     private PebbleKit.PebbleDataReceiver mDataReceiver;
     private BroadcastReceiver mBatteryReceiver;
     private BroadcastReceiver mPebbleConnect;
     private BroadcastReceiver mPebbleDisconnect;
 
+    //View elements
     private RelativeLayout mLayout;
     private TextView mStatusMessageTextView;
 
@@ -47,14 +51,16 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         mLayout = (RelativeLayout)findViewById(R.id.mainLayout);
-        mStatusMessageTextView = (TextView) findViewById(R.id.statusMessage);
+        mStatusMessageTextView = (TextView)findViewById(R.id.statusMessage);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        
+        final IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        registerReceiver(mBatteryReceiver, filter);
 
         setupReceivers();
         registerReceivers();
@@ -63,15 +69,15 @@ public class MainActivity extends Activity {
     }
 
     private void registerReceivers() {
-        final IntentFilter filter = new IntentFilter(Intent.ACTION_TIME_TICK);
+        //Receiver for updating info on the minute
+        //Intent to grab battery info for updating.
+        //Do not register to battery change events, because it will basically
+        //fire nonstop.
         mBatteryIntent = registerReceiver(null, mBatteryFilter);
-        registerReceiver(mBatteryReceiver, filter);
 
         //Receiver for data from the Pebble
         PebbleKit.registerReceivedDataHandler(this, mDataReceiver);
-
         PebbleKit.registerPebbleConnectedReceiver(this, mPebbleConnect);
-
         PebbleKit.registerPebbleDisconnectedReceiver(this, mPebbleDisconnect);
     }
 
@@ -101,7 +107,7 @@ public class MainActivity extends Activity {
             }
         };
 
-        mDataReceiver = new PebbleKit.PebbleDataReceiver(PebbleBattUUID) {
+        mDataReceiver = new PebbleKit.PebbleDataReceiver(BatteryLevelsUUID) {
             @Override
             public void receiveData(Context context, int transactionId, PebbleDictionary data) {
                 Log.i(TAG, "Received data from Pebble: " + data.getInteger(SIGNAL_TO_PHONE_KEY));
@@ -134,7 +140,7 @@ public class MainActivity extends Activity {
         int chargeState = mBatteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
         dict.addInt32(PHONE_CHARGE_STATE_KEY, chargeState);
         Log.d(TAG, "BatteryManager PLUGGED value: " + chargeState);
-        PebbleKit.sendDataToPebble(MainActivity.this, PebbleBattUUID, dict);
+        PebbleKit.sendDataToPebble(MainActivity.this, BatteryLevelsUUID, dict);
         Log.i(TAG, "Sending battery and charge data to Pebble");
     }
 
@@ -153,6 +159,9 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBatteryReceiver);
+        unregisterReceiver(mDataReceiver);
+        unregisterReceiver(mPebbleConnect);
+        unregisterReceiver(mPebbleDisconnect);
         Log.i(TAG, "Unregistered BroadcastReceiver");
     }
 }
