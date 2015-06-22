@@ -1,6 +1,8 @@
 package xeleciumlabs.batterylevelscompanion;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +10,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -51,6 +54,16 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
 
         ButterKnife.inject(this);
+
+        //Set up persistent notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setSmallIcon(R.mipmap.icon_launcher)
+                .setContentTitle("Battery Levels")
+                .setContentText("Battery Levels is running")
+                .setOngoing(true)       //Ongoing notification
+                .setPriority(NotificationCompat.PRIORITY_MIN);  //Minimize priority so it doesn't appear in the notification bar, similar to Pebble
+        NotificationManager manager = (NotificationManager)getSystemService(this.NOTIFICATION_SERVICE);
+        manager.notify(327, builder.build());
     }
 
     @Override
