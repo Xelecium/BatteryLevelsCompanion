@@ -1,7 +1,6 @@
 package xeleciumlabs.batterylevelscompanion;
 
 import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -23,9 +22,6 @@ import com.getpebble.android.kit.util.PebbleDictionary;
 
 import java.util.UUID;
 
-import butterknife.ButterKnife;
-import butterknife.InjectView;
-
 public class MainActivity extends Activity {
 
     //key for pushing battery info to the Pebble
@@ -38,9 +34,9 @@ public class MainActivity extends Activity {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int NotificationID = 327;
 
-    @InjectView(R.id.mainLayout) RelativeLayout mLayout;
-    @InjectView(R.id.statusMessage) TextView mStatusMessageTextView;
-    @InjectView(R.id.closeButton) Button mCloseButton;
+    private RelativeLayout mLayout;
+    private TextView mStatusMessageTextView;
+    private Button mCloseButton;
 
     //Note: the frequency of when ACTION_BATTERY_CHANGED is determined by the
     // manufacturer and cannot be changed
@@ -59,7 +55,9 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        ButterKnife.inject(this);
+        mLayout = (RelativeLayout)findViewById(R.id.mainLayout);
+        mStatusMessageTextView = (TextView)findViewById(R.id.statusMessage);
+        mCloseButton = (Button)findViewById(R.id.closeButton);
 
         mCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -76,7 +74,7 @@ public class MainActivity extends Activity {
                 .setOngoing(true)       //Ongoing notification
                 .setContentIntent(notificationIntent)
                 .setPriority(NotificationCompat.PRIORITY_MIN);  //Minimize priority so it doesn't appear in the notification bar, similar to Pebble
-        mNotificationManager = (NotificationManager)getSystemService(this.NOTIFICATION_SERVICE);
+        mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         mNotificationManager.notify(NotificationID, builder.build());
     }
 
