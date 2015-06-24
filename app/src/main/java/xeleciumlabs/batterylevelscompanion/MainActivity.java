@@ -73,7 +73,6 @@ public class MainActivity extends Activity {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.mipmap.icon_launcher)
                 .setContentTitle("Battery Levels")
-                .setContentText("Battery Levels is running")
                 .setOngoing(true)       //Ongoing notification
                 .setContentIntent(notificationIntent)
                 .setPriority(NotificationCompat.PRIORITY_MIN);  //Minimize priority so it doesn't appear in the notification bar, similar to Pebble
