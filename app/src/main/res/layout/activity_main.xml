@@ -20,4 +20,13 @@
         android:layout_marginRight="10dp"
         />
 
+    <Button
+        android:id="@+id/closeButton"
+        android:text="Close App"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="108dp"/>
+
 </RelativeLayout>

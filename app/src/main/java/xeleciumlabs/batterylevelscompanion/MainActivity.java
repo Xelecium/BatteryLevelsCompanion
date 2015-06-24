@@ -3,6 +3,7 @@ package xeleciumlabs.batterylevelscompanion;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,6 +13,8 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -33,15 +36,18 @@ public class MainActivity extends Activity {
     private static final UUID BatteryLevelsUUID = UUID.fromString("1e4990c7-8abe-4643-a0fd-1d86e26503b4");
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    private static final int NotificationID = 327;
 
     @InjectView(R.id.mainLayout) RelativeLayout mLayout;
     @InjectView(R.id.statusMessage) TextView mStatusMessageTextView;
+    @InjectView(R.id.closeButton) Button mCloseButton;
 
     //Note: the frequency of when ACTION_BATTERY_CHANGED is determined by the
     // manufacturer and cannot be changed
     private final IntentFilter timeFilter = new IntentFilter(Intent.ACTION_TIME_TICK);
     private IntentFilter mBatteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private Intent mBatteryIntent;
+    private NotificationManager mNotificationManager;
 
     private PebbleKit.PebbleDataReceiver mDataReceiver;
     private BroadcastReceiver mBatteryReceiver;
@@ -55,15 +61,24 @@ public class MainActivity extends Activity {
 
         ButterKnife.inject(this);
 
+        mCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+
         //Set up persistent notification
+        PendingIntent notificationIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setSmallIcon(R.mipmap.icon_launcher)
                 .setContentTitle("Battery Levels")
                 .setContentText("Battery Levels is running")
                 .setOngoing(true)       //Ongoing notification
+                .setContentIntent(notificationIntent)
                 .setPriority(NotificationCompat.PRIORITY_MIN);  //Minimize priority so it doesn't appear in the notification bar, similar to Pebble
-        NotificationManager manager = (NotificationManager)getSystemService(this.NOTIFICATION_SERVICE);
-        manager.notify(327, builder.build());
+        mNotificationManager = (NotificationManager)getSystemService(this.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(NotificationID, builder.build());
     }
 
     @Override
@@ -167,6 +182,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         unregisterReceiver(mBatteryReceiver);
+        mNotificationManager.cancel(NotificationID);
         Log.i(TAG, "Unregistered BroadcastReceiver");
     }
 }
