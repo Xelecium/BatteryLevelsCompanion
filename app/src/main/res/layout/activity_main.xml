@@ -22,7 +22,7 @@
 
     <Button
         android:id="@+id/closeButton"
-        android:text="Close App"
+        android:text="@string/close_button_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -42,28 +42,28 @@
 
         <TextView
             android:id="@+id/notificationPreferenceLabel"
-            android:text="Notification Icon"
+            android:text="@string/notification_preference_label"
             android:textSize="20sp"
             android:textStyle="bold"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="20dp"
             />
 
         <TextView
             android:id="@+id/notificationPreferenceDetail"
-            android:text="Add an item to the notification tray"
+            android:text="@string/notification_preference_detail"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/notificationPreferenceLabel"
-            android:layout_marginLeft="40dp"
+            android:layout_marginStart="40dp"
             />
 
         <CheckBox
             android:id="@+id/notificationPreferenceCheckBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignTop="@id/notificationPreferenceLabel"
             android:layout_marginEnd="20dp"
             />

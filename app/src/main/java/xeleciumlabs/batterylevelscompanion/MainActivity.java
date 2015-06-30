@@ -1,20 +1,23 @@
 package xeleciumlabs.batterylevelscompanion;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.ListView;
+import android.widget.CheckBox;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -32,13 +35,18 @@ public class MainActivity extends Activity {
     private static final int SIGNAL_TO_PHONE_KEY = 11;
     private static final UUID BatteryLevelsUUID = UUID.fromString("1e4990c7-8abe-4643-a0fd-1d86e26503b4");
 
+    private SharedPreferences.Editor mSettingsEditor;
+
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int NotificationID = 327;
 
     private RelativeLayout mLayout;
     private TextView mStatusMessageTextView;
     private Button mCloseButton;
-    private ListView mPreferenceListView;
+
+    private RelativeLayout mNotificationPreferenceItem;
+    private CheckBox mNotificationCheckBox;
+    private boolean mNotificationPreference;
 
     //Note: the frequency of when ACTION_BATTERY_CHANGED is determined by the
     // manufacturer and cannot be changed
@@ -46,6 +54,7 @@ public class MainActivity extends Activity {
     private IntentFilter mBatteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private Intent mBatteryIntent;
     private NotificationManager mNotificationManager;
+    private Notification mNotification;
 
     private PebbleKit.PebbleDataReceiver mDataReceiver;
     private BroadcastReceiver mBatteryReceiver;
@@ -60,17 +69,39 @@ public class MainActivity extends Activity {
         mLayout = (RelativeLayout)findViewById(R.id.mainLayout);
         mStatusMessageTextView = (TextView)findViewById(R.id.statusMessage);
         mCloseButton = (Button)findViewById(R.id.closeButton);
-        mPreferenceListView = (ListView)findViewById(R.id.preferencesList);
 
-        mCloseButton.setOnClickListener(new View.OnClickListener() {
+        mNotificationPreference = getPreferences(MODE_PRIVATE).getBoolean("notificationIcon", false);
+        mSettingsEditor = getPreferences(MODE_PRIVATE).edit();
+
+        setupNotification();
+
+        mNotificationPreferenceItem = (RelativeLayout)findViewById(R.id.notificationPreferenceItem);
+        mNotificationCheckBox = (CheckBox)findViewById(R.id.notificationPreferenceCheckBox);
+        updateNotificationPreference();
+
+        mCloseButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
 
+        mNotificationPreferenceItem.setOnClickListener(notificationIconClickListener);
+        mNotificationCheckBox.setOnClickListener(notificationIconClickListener);
 
-        //TODO: Have this block toggled based on a setting
+    }
+
+    private OnClickListener notificationIconClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //Toggle preference between true and false
+            mNotificationPreference = !mNotificationPreference;
+
+            updateNotificationPreference();
+        }
+    };
+
+    private void setupNotification() {
         //Set up persistent notification
         PendingIntent notificationIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
@@ -80,7 +111,26 @@ public class MainActivity extends Activity {
                 .setContentIntent(notificationIntent)
                 .setPriority(NotificationCompat.PRIORITY_MIN);  //Minimize priority so it doesn't appear in the notification bar, similar to Pebble
         mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        mNotificationManager.notify(NotificationID, builder.build());
+        mNotification = builder.build();
+    }
+
+    private void updateNotificationPreference() {
+        //set checkbox accordingly
+        mNotificationCheckBox.setChecked(mNotificationPreference);
+
+        //If user wants the notification icon
+        if (mNotificationPreference) {
+            mNotificationManager.notify(NotificationID, mNotification);
+            mSettingsEditor.putBoolean("notificationIcon", true);
+            Log.d(TAG, "Notification Icon enabled!");
+        }
+        //If the user does not want the notification icon
+        else {
+            mNotificationManager.cancel(NotificationID);
+            mSettingsEditor.putBoolean("notificationIcon", false);
+            Log.d(TAG, "Notification Icon disabled!");
+        }
+
     }
 
     @Override
@@ -178,6 +228,13 @@ public class MainActivity extends Activity {
         float batteryPercent = batteryLevel / (float)batteryScale;
 
         return (int)(batteryPercent * 100);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        mSettingsEditor.commit();
     }
 
     @Override
