@@ -15,7 +15,7 @@
         android:textSize="30sp"
         android:gravity="center"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="30dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         />
@@ -27,6 +27,47 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="108dp"/>
+        android:layout_marginBottom="30dp"
+        />
+
+    <RelativeLayout
+        android:id="@+id/notificationPreferenceItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/statusMessage"
+        android:layout_marginTop="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        >
+
+        <TextView
+            android:id="@+id/notificationPreferenceLabel"
+            android:text="Notification Icon"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            />
+
+        <TextView
+            android:id="@+id/notificationPreferenceDetail"
+            android:text="Add an item to the notification tray"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/notificationPreferenceLabel"
+            android:layout_marginLeft="40dp"
+            />
+
+        <CheckBox
+            android:id="@+id/notificationPreferenceCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/notificationPreferenceLabel"
+            android:layout_marginEnd="20dp"
+            />
+
+    </RelativeLayout>
 
 </RelativeLayout>

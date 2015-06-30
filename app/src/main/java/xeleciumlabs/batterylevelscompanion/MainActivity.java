@@ -14,6 +14,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -37,6 +38,7 @@ public class MainActivity extends Activity {
     private RelativeLayout mLayout;
     private TextView mStatusMessageTextView;
     private Button mCloseButton;
+    private ListView mPreferenceListView;
 
     //Note: the frequency of when ACTION_BATTERY_CHANGED is determined by the
     // manufacturer and cannot be changed
@@ -58,6 +60,7 @@ public class MainActivity extends Activity {
         mLayout = (RelativeLayout)findViewById(R.id.mainLayout);
         mStatusMessageTextView = (TextView)findViewById(R.id.statusMessage);
         mCloseButton = (Button)findViewById(R.id.closeButton);
+        mPreferenceListView = (ListView)findViewById(R.id.preferencesList);
 
         mCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,6 +69,8 @@ public class MainActivity extends Activity {
             }
         });
 
+
+        //TODO: Have this block toggled based on a setting
         //Set up persistent notification
         PendingIntent notificationIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
