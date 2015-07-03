@@ -6,5 +6,7 @@
     <string name="close_button_label">Close App</string>
     <string name="notification_preference_label">Notification Icon</string>
     <string name="notification_preference_detail">Add an item to the notification tray</string>
+    <string name="background_preference_label">Run in Background</string>
+    <string name="background_preference_detail">Run Battery Levels even if app is closed</string>
 
 </resources>

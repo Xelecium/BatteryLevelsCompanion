@@ -31,10 +31,50 @@
         />
 
     <RelativeLayout
-        android:id="@+id/notificationPreferenceItem"
+        android:id="@+id/backgroundPreferenceItem"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/statusMessage"
+        android:layout_marginTop="20dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"
+        >
+
+        <TextView
+            android:id="@+id/backgroundPreferenceLabel"
+            android:text="@string/background_preference_label"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            />
+
+        <TextView
+            android:id="@+id/backgroundPreferenceDetail"
+            android:text="@string/background_preference_detail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/backgroundPreferenceLabel"
+            android:layout_marginStart="40dp"
+            />
+
+        <CheckBox
+            android:id="@+id/backgroundPreferenceCheckBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@id/backgroundPreferenceLabel"
+            android:layout_marginEnd="20dp"
+            />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/notificationPreferenceItem"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/backgroundPreferenceItem"
         android:layout_marginTop="20dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
@@ -68,6 +108,5 @@
             android:layout_marginEnd="20dp"
             />
 
-    </RelativeLayout>
-
+        </RelativeLayout>
 </RelativeLayout>
