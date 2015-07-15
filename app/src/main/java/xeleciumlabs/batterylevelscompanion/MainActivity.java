@@ -44,6 +44,10 @@ public class MainActivity extends Activity {
     private TextView mStatusMessageTextView;
     private Button mCloseButton;
 
+    private RelativeLayout mBackgroundPreferenceItem;
+    private CheckBox mBackgroundCheckBox;
+    private boolean mBackgroundPreference;
+
     private RelativeLayout mNotificationPreferenceItem;
     private CheckBox mNotificationCheckBox;
     private boolean mNotificationPreference;
@@ -70,10 +74,16 @@ public class MainActivity extends Activity {
         mStatusMessageTextView = (TextView)findViewById(R.id.statusMessage);
         mCloseButton = (Button)findViewById(R.id.closeButton);
 
+        mBackgroundPreference = getPreferences(MODE_PRIVATE).getBoolean("background", true);
         mNotificationPreference = getPreferences(MODE_PRIVATE).getBoolean("notificationIcon", false);
         mSettingsEditor = getPreferences(MODE_PRIVATE).edit();
 
+        setupBackground();
         setupNotification();
+
+        mBackgroundPreferenceItem = (RelativeLayout)findViewById(R.id.backgroundPreferenceItem);
+        mBackgroundCheckBox = (CheckBox)findViewById(R.id.backgroundPreferenceCheckBox);
+        updateBackgroundPreference();
 
         mNotificationPreferenceItem = (RelativeLayout)findViewById(R.id.notificationPreferenceItem);
         mNotificationCheckBox = (CheckBox)findViewById(R.id.notificationPreferenceCheckBox);
@@ -86,12 +96,43 @@ public class MainActivity extends Activity {
             }
         });
 
+        mBackgroundPreferenceItem.setOnClickListener(backgroundClickListener);
+        mBackgroundCheckBox.setOnClickListener(backgroundClickListener);
         mNotificationPreferenceItem.setOnClickListener(notificationIconClickListener);
         mNotificationCheckBox.setOnClickListener(notificationIconClickListener);
 
     }
 
-    private OnClickListener notificationIconClickListener = new View.OnClickListener() {
+    OnClickListener backgroundClickListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            //Toggle preference between true and false
+            mBackgroundPreference = !mBackgroundPreference;
+
+            updateBackgroundPreference();
+        }
+    };
+
+    private void setupBackground() {
+        //Continue battery updates to Pebble in the background
+    }
+
+    private void updateBackgroundPreference() {
+        //set checkbox accordingly
+        mBackgroundCheckBox.setChecked(mBackgroundPreference);
+
+        //if user wants to continue running in background
+        if (mBackgroundPreference) {
+            Log.d(TAG, "Background Alarm enabled!");
+        }
+
+        //if user wants to stop running in the background
+        else {
+            Log.d(TAG, "Background Alarm disabled!");
+        }
+    }
+
+    private OnClickListener notificationIconClickListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
             //Toggle preference between true and false
