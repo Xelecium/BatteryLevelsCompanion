@@ -1,6 +1,7 @@
 package xeleciumlabs.batterylevelscompanion;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -34,6 +35,7 @@ public class MainActivity extends Activity {
     //key for signalling the phone to send back information
     private static final int SIGNAL_TO_PHONE_KEY = 11;
     private static final UUID BatteryLevelsUUID = UUID.fromString("1e4990c7-8abe-4643-a0fd-1d86e26503b4");
+    private static final String UPDATE_ACTION = "xeleciumlabs.alarmupdate";
 
     private SharedPreferences.Editor mSettingsEditor;
 
@@ -57,11 +59,15 @@ public class MainActivity extends Activity {
     private final IntentFilter timeFilter = new IntentFilter(Intent.ACTION_TIME_TICK);
     private IntentFilter mBatteryFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
     private Intent mBatteryIntent;
+
+    private AlarmManager mAlarmManager;
+    private PendingIntent mBackgroundIntent;
     private NotificationManager mNotificationManager;
     private Notification mNotification;
 
     private PebbleKit.PebbleDataReceiver mDataReceiver;
     private BroadcastReceiver mBatteryReceiver;
+    private BroadcastReceiver mBackgroundReceiver;
     private BroadcastReceiver mPebbleConnect;
     private BroadcastReceiver mPebbleDisconnect;
 
@@ -74,11 +80,15 @@ public class MainActivity extends Activity {
         mStatusMessageTextView = (TextView)findViewById(R.id.statusMessage);
         mCloseButton = (Button)findViewById(R.id.closeButton);
 
-        mBackgroundPreference = getPreferences(MODE_PRIVATE).getBoolean("background", true);
+        mBackgroundPreference = getPreferences(MODE_PRIVATE).getBoolean("backgroundAlarm", true);
         mNotificationPreference = getPreferences(MODE_PRIVATE).getBoolean("notificationIcon", false);
         mSettingsEditor = getPreferences(MODE_PRIVATE).edit();
 
-        setupBackground();
+        setupReceivers();
+        registerReceivers();
+
+        mAlarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        //setupBackground();
         setupNotification();
 
         mBackgroundPreferenceItem = (RelativeLayout)findViewById(R.id.backgroundPreferenceItem);
@@ -115,6 +125,7 @@ public class MainActivity extends Activity {
 
     private void setupBackground() {
         //Continue battery updates to Pebble in the background
+
     }
 
     private void updateBackgroundPreference() {
@@ -123,11 +134,18 @@ public class MainActivity extends Activity {
 
         //if user wants to continue running in background
         if (mBackgroundPreference) {
+            mAlarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME,
+                    1 * 1000,
+                    60 * 1000,
+                    mBackgroundIntent);
+            mSettingsEditor.putBoolean("backgroundAlarm", true);
             Log.d(TAG, "Background Alarm enabled!");
         }
 
         //if user wants to stop running in the background
         else {
+            mAlarmManager.cancel(mBackgroundIntent);
+            mSettingsEditor.putBoolean("backgroundAlarm", false);
             Log.d(TAG, "Background Alarm disabled!");
         }
     }
@@ -178,8 +196,6 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
 
-        setupReceivers();
-        registerReceivers();
 
         sendBatteryToPebble();
 
@@ -189,7 +205,9 @@ public class MainActivity extends Activity {
     private void registerReceivers() {
 
         mBatteryIntent = registerReceiver(null, mBatteryFilter);
-        registerReceiver(mBatteryReceiver, timeFilter);
+        //registerReceiver(mBatteryReceiver, timeFilter);
+        registerReceiver(mBackgroundReceiver, new IntentFilter(UPDATE_ACTION));
+        mBackgroundIntent = PendingIntent.getBroadcast(this, 0, new Intent(UPDATE_ACTION), 0);
         //Receiver for data from the Pebble
         PebbleKit.registerReceivedDataHandler(this, mDataReceiver);
         PebbleKit.registerPebbleConnectedReceiver(this, mPebbleConnect);
@@ -230,6 +248,14 @@ public class MainActivity extends Activity {
             public void onReceive(Context context, Intent intent) {
                 Log.i(TAG, "Pebble disconnected!");
                 updatePebbleConnection();
+            }
+        };
+
+        mBackgroundReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i(TAG, "Received Background Broadcast");
+                sendBatteryToPebble();
             }
         };
     }
@@ -281,7 +307,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(mBatteryReceiver);
+        //unregisterReceiver(mBatteryReceiver);
         mNotificationManager.cancel(NotificationID);
         Log.i(TAG, "Unregistered BroadcastReceiver");
     }
